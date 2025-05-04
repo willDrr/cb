@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reservations Manager</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+    .tab {
+      display: none;
+    }
+    .tab.active {
+      display: block;
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
+
+  <div class="flex h-screen">
+    <!-- Sidebar -->
+    <nav class="w-64 bg-gray-800 text-white p-6">
+      <h2 class="text-2xl font-semibold mb-6">Menu</h2>
+      <ul>
+        <li>
+          <button onclick="showTab('reservations')" class="w-full text-left py-2 px-4 hover:bg-gray-700">Reservations</button>
+        </li>
+        <li>
+          <button onclick="showTab('reservations-filter')" class="w-full text-left py-2 px-4 hover:bg-gray-700">Reservations (Filter)</button>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="flex-1 p-6">
+      <!-- Reservations Tab -->
+      <section id="reservations" class="tab active">
+        <h1 class="text-3xl font-semibold mb-4">Upload Reservations CSV</h1>
+        <input type="file" id="csvFileInput" accept=".csv" class="mb-4 p-2 border border-gray-300 rounded" />
+        <table id="reservationsTable" class="min-w-full bg-white border border-gray-300 rounded">
+          <thead>
+            <tr>
+              <th class="py-2 px-4 border-b">ID</th>
+              <th class="py-2 px-4 border-b">Name</th>
+              <th class="py-2 px-4 border-b">Amount</th>
+              <th class="py-2 px-4 border-b">State</th>
+              <th class="py-2 px-4 border-b">Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <!-- Reservations Filter Tab -->
+      <section id="reservations-filter" class="tab">
+        <h1 class="text-3xl font-semibold mb-4">Filter Reservations by State</h1>
+        <div class="mb-4">
+          <label><input type="radio" name="stateFilter" value="All" checked class="mr-2" /> All</label>
+          <label><input type="radio" name="stateFilter" value="Pending" class="mr-2" /> Pending</label>
+          <label><input type="radio" name="stateFilter" value="Confirmed" class="mr-2" /> Confirmed</label>
+          <label><input type="radio" name="stateFilter" value="Cancelled" class="mr-2" /> Cancelled</label>
+        </div>
+        <table id="filterTable" class="min-w-full bg-white border border-gray-300 rounded">
+          <thead>
+            <tr>
+              <th class="py-2 px-4 border-b">ID</th>
+              <th class="py-2 px-4 border-b">Name</th>
+              <th class="py-2 px-4 border-b">Amount</th>
+              <th class="py-2 px-4 border-b">State</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
