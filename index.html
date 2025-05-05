@@ -136,7 +136,7 @@
     </tfoot>
     </table>
 
-    <div id="totalAmount" class="text-right px-4 py-2 bg-gray-100">Total Amount: $0</div>
+    <!--  <div id="totalAmount" class="text-right px-4 py-2 bg-gray-100">Total Amount: $0</div>  -->
 
     <!-- Pagination Controls -->
 <div id="paginationControls" class="flex justify-between px-4 py-2 bg-gray-100">
@@ -217,7 +217,7 @@ let currentPage = 1;
     // Function to calculate and update the total amount
     function updateTotalAmount(filteredReservations) {
         const totalAmount = filteredReservations.reduce((sum, reservation) => sum + reservation.amount, 0);
-        document.getElementById('totalAmount').textContent = `Total Amount: $${totalAmount.toFixed(2)}`;
+        document.getElementById('totalAmount').textContent = `$${totalAmount.toFixed(2)}`;
     }
 
     // Function to render reservation table with pagination
