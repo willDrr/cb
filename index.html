@@ -1,122 +1,341 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reservations Manager</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
-  <style>
-    .tab {
-      display: none;
-    }
-    .tab.active {
-      display: block;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservation Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Center the modal */
+        .modal-content {
+            width: 70%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        /* Modal Overlay */
+        #reservationModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-50">
 
-  <div class="flex h-screen">
-    <!-- Sidebar -->
-    <nav class="w-64 bg-gray-800 text-white p-6">
-      <h2 class="text-2xl font-semibold mb-6">Menu</h2>
-      <ul>
-        <li><button onclick="showTab('reservations')" class="w-full text-left py-2 px-4 hover:bg-gray-700">Reservations</button></li>
-        <li><button onclick="showTab('reservations-filter')" class="w-full text-left py-2 px-4 hover:bg-gray-700">Reservations (Filter)</button></li>
-        <li><button onclick="showTab('manual-entry')" class="w-full text-left py-2 px-4 hover:bg-gray-700">Manual Entry</button></li>
-      </ul>
-    </nav>
+    <!-- Add Reservation Form -->
+    <div class="p-6 bg-white rounded-lg shadow-lg max-w-md mx-auto my-8">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-6 text-center">Add New Reservation</h2>
+        <form id="addReservationForm" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="col-span-1">
+                    <label for="reservationNumber" class="text-sm font-medium text-gray-700">Reservation #</label>
+                    <input type="text" id="reservationNumber" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:outline-none" placeholder="e.g. R123" required>
+                </div>
+                <div class="col-span-1">
+                    <label for="name" class="text-sm font-medium text-gray-700">Guest Name</label>
+                    <input type="text" id="name" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:outline-none" placeholder="Enter Guest Name" required>
+                </div>
+            </div>
 
-    <!-- Main Content -->
-    <div class="flex-1 p-6">
-      <!-- Reservations Tab -->
-      <section id="reservations" class="tab active">
-        <h1 class="text-3xl font-semibold mb-4">Upload Reservations CSV</h1>
-        <input type="file" id="csvFileInput" accept=".csv" class="mb-4 p-2 border border-gray-300 rounded" />
-        <table id="reservationsTable" class="min-w-full bg-white border border-gray-300 rounded">
-          <thead>
-            <tr>
-              <th class="py-2 px-4 border-b">ID</th>
-              <th class="py-2 px-4 border-b">Name</th>
-              <th class="py-2 px-4 border-b">Amount</th>
-              <th class="py-2 px-4 border-b">State</th>
-              <th class="py-2 px-4 border-b">Actions</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </section>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="col-span-1">
+                    <label for="amount" class="text-sm font-medium text-gray-700">Amount</label>
+                    <input type="number" id="amount" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:outline-none" placeholder="e.g. 150" required>
+                </div>
+                <div class="col-span-1">
+                    <label for="checkInDate" class="text-sm font-medium text-gray-700">Check-in Date</label>
+                    <input type="date" id="checkInDate" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:outline-none" required>
+                </div>
+            </div>
 
-      <!-- Reservations Filter Tab -->
-      <section id="reservations-filter" class="tab">
-        <h1 class="text-3xl font-semibold mb-4">Filter Reservations by State</h1>
-        <div class="mb-4">
-          <label><input type="radio" name="stateFilter" value="All" checked class="mr-2" /> All</label>
-          <label><input type="radio" name="stateFilter" value="Pending" class="mr-2" /> Pending</label>
-          <label><input type="radio" name="stateFilter" value="Confirmed" class="mr-2" /> Confirmed</label>
-          <label><input type="radio" name="stateFilter" value="Cancelled" class="mr-2" /> Cancelled</label>
-        </div>
-        <table id="filterTable" class="min-w-full bg-white border border-gray-300 rounded">
-          <thead>
-            <tr>
-              <th class="py-2 px-4 border-b">ID</th>
-              <th class="py-2 px-4 border-b">Name</th>
-              <th class="py-2 px-4 border-b">Amount</th>
-              <th class="py-2 px-4 border-b">State</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </section>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="col-span-1">
+                    <label for="dueDate" class="text-sm font-medium text-gray-700">Due Date</label>
+                    <input type="date" id="dueDate" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:outline-none" required>
+                </div>
+                <div class="col-span-1">
+                    <label for="source" class="text-sm font-medium text-gray-700">Source</label>
+                    <select id="source" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:outline-none">
+                        <option value="expedia">Expedia</option>
+                        <option value="booking">Booking</option>
+                        <option value="web_engine">Web Engine</option>
+                        <option value="ecole">Ecole</option>
+                        <option value="ara">Ara</option>
+                    </select>
+                </div>
+            </div>
 
-      <!-- Manual Entry Tab -->
-      <section id="manual-entry" class="tab">
-        <h1 class="text-3xl font-semibold mb-4">Add Reservation Manually</h1>
-        <form id="addReservationForm">
-          <div class="mb-4">
-            <label class="block mb-2" for="manualId">ID:</label>
-            <input type="text" id="manualId" class="w-full px-4 py-2 border border-gray-300 rounded" required />
-          </div>
-          <div class="mb-4">
-            <label class="block mb-2" for="manualName">Name:</label>
-            <input type="text" id="manualName" class="w-full px-4 py-2 border border-gray-300 rounded" required />
-          </div>
-          <div class="mb-4">
-            <label class="block mb-2" for="manualAmount">Amount:</label>
-            <input type="text" id="manualAmount" class="w-full px-4 py-2 border border-gray-300 rounded" required />
-          </div>
-          <div class="mb-4">
-            <label class="block mb-2" for="manualState">State:</label>
-            <input type="text" id="manualState" class="w-full px-4 py-2 border border-gray-300 rounded" required />
-          </div>
-          <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">Add Reservation</button>
+            <button type="submit" class="w-full py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">Add Reservation</button>
         </form>
-      </section>
-
-      <!-- Edit Reservation Form -->
-      <section id="editReservation" class="tab">
-        <h1 class="text-3xl font-semibold mb-4">Edit Reservation</h1>
-        <form onsubmit="saveEditedReservation(event)">
-          <input type="hidden" id="editId" />
-          <div class="mb-4">
-            <label class="block mb-2" for="editName">Name:</label>
-            <input type="text" id="editName" class="w-full px-4 py-2 border border-gray-300 rounded" required />
-          </div>
-          <div class="mb-4">
-            <label class="block mb-2" for="editAmount">Amount:</label>
-            <input type="text" id="editAmount" class="w-full px-4 py-2 border border-gray-300 rounded" required />
-          </div>
-          <div class="mb-4">
-            <label class="block mb-2" for="editState">State:</label>
-            <input type="text" id="editState" class="w-full px-4 py-2 border border-gray-300 rounded" required />
-          </div>
-          <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">Save Changes</button>
-        </form>
-      </section>
     </div>
-  </div>
 
-  <script src="script.js"></script>
+    <!-- Filter Options -->
+
+    <div class="flex flex-wrap justify-between space-y-4 md:space-y-0 md:space-x-6 mb-6 max-w-7xl mx-auto">
+    <div class="w-full sm:w-1/3 md:w-1/4">
+        <label for="reservationSearch" class="block text-sm font-medium text-gray-700">Search by Reservation #</label>
+        <input type="text" id="reservationSearch" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:outline-none" placeholder="Enter Reservation #">
+    </div>
+
+    <div class="w-full sm:w-1/3 md:w-1/4">
+        <label for="sourceFilter" class="block text-sm font-medium text-gray-700">Filter by Source</label>
+        <select id="sourceFilter" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:outline-none">
+            <option value="">All</option>
+            <option value="expedia">Expedia</option>
+            <option value="booking">Booking</option>
+            <option value="web_engine">Web Engine</option>
+            <option value="ecole">Ecole</option>
+            <option value="ara">Ara</option>
+        </select>
+    </div>
+
+    <div class="w-full sm:w-1/3 md:w-1/4">
+        <label for="paymentStatusFilter" class="block text-sm font-medium text-gray-700">Filter by Payment Status</label>
+        <select id="paymentStatusFilter" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:outline-none">
+            <option value="">All</option>
+            <option value="pending">Pending Payments</option>
+            <option value="paid">Fully Paid</option>
+        </select>
+    </div>
+</div>
+
+
+    <!-- Filtered Reservations Table -->
+    <table id="filteredReservationTable" class="min-w-full table-auto bg-white rounded-lg shadow-md mb-6 max-w-7xl mx-auto">
+        <thead>
+            <tr>
+                <th class="px-4 py-2 text-left">Reservation #</th>
+                <th class="px-4 py-2 text-left">Guest Name</th>
+                <th class="px-4 py-2 text-left">Amount</th>
+                <th class="px-4 py-2 text-left">Check-in Date</th>
+                <th class="px-4 py-2 text-left">Due Date</th>
+                <th class="px-4 py-2 text-left">Remaining Balance</th>
+                <th class="px-4 py-2 text-left">Source</th>
+                <th class="px-4 py-2 text-left">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="filteredReservationTableBody">
+            <!-- Filtered reservations will be rendered here -->
+        </tbody>
+    </table>
+
+    <!-- Reservation Details Modal -->
+    <div id="reservationModal" class="hidden">
+        <div class="modal-content bg-white p-6 rounded-lg shadow-lg">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-gray-800">Reservation Details</h3>
+                <button id="closeModal" class="text-gray-600 font-bold text-lg">×</button>
+            </div>
+
+            <div class="mb-6">
+                <h4 class="text-lg font-semibold">Reservation #<span id="modalReservationNumber"></span></h4>
+                <p class="text-gray-700">Guest Name: <span id="modalName"></span></p>
+                <p class="text-gray-700">Amount: $<span id="modalAmount"></span></p>
+                <p class="text-gray-700">Check-in Date: <span id="modalCheckInDate"></span></p>
+                <p class="text-gray-700">Due Date: <span id="modalDueDate"></span></p>
+                <p class="text-gray-700">Source: <span id="modalSource"></span></p>
+            </div>
+
+            <h4 class="text-lg font-semibold mb-2">Payment History</h4>
+            <div id="paymentHistory" class="mb-4">
+                <!-- Payment history will appear here -->
+            </div>
+
+            <h4 class="text-lg font-semibold mb-2">Add Payment</h4>
+            <form id="paymentForm" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-1">
+                        <label for="paymentAmount" class="text-sm font-medium text-gray-700">Amount</label>
+                        <input type="number" id="paymentAmount" class="w-full p-2 border border-gray-300 rounded-md" required>
+                    </div>
+                    <div class="col-span-1">
+                        <label for="paymentType" class="text-sm font-medium text-gray-700">Payment Type</label>
+                        <select id="paymentType" class="w-full p-2 border border-gray-300 rounded-md">
+                            <option value="sinpe">Sinpe</option>
+                            <option value="efectivo">Efectivo</option>
+                            <option value="card">Card</option>
+                            <option value="transfer">Transfer</option>
+                            <option value="cxc">CXC</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-1">
+                        <label for="paymentRef" class="text-sm font-medium text-gray-700">Payment Ref</label>
+                        <input type="text" id="paymentRef" class="w-full p-2 border border-gray-300 rounded-md" required>
+                    </div>
+                    <div class="col-span-1">
+                        <label for="facturaElectronica" class="text-sm font-medium text-gray-700">Factura Electronica</label>
+                        <input type="text" id="facturaElectronica" class="w-full p-2 border border-gray-300 rounded-md">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-2 bg-blue-600 text-white font-semibold rounded-md">Add Payment</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let reservations = JSON.parse(localStorage.getItem('reservations')) || [];
+
+        // Function to render the reservations table
+        function renderReservationTable(filteredReservations) {
+            const tableBody = document.getElementById('filteredReservationTableBody');
+            tableBody.innerHTML = '';
+
+            filteredReservations.forEach(reservation => {
+                const row = document.createElement('tr');
+                row.className = reservation.remainingBalance === 0 ? 'bg-green-100' : 'bg-red-100';
+
+                row.innerHTML = `
+                    <td class="px-4 py-2">${reservation.reservationNumber}</td>
+                    <td class="px-4 py-2">${reservation.name}</td>
+                    <td class="px-4 py-2">$${reservation.amount}</td>
+                    <td class="px-4 py-2">${reservation.checkInDate}</td>
+                    <td class="px-4 py-2">${reservation.dueDate}</td>
+                    <td class="px-4 py-2">$${reservation.remainingBalance}</td>
+                    <td class="px-4 py-2">${reservation.source}</td>
+                    <td class="px-4 py-2">
+                        <button class="text-blue-600 hover:text-blue-800" onclick="viewReservationDetails('${reservation.reservationNumber}')">View</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Function to view reservation details in a modal
+        function viewReservationDetails(reservationNumber) {
+            const reservation = reservations.find(res => res.reservationNumber === reservationNumber);
+            if (!reservation) return;
+
+            document.getElementById('modalReservationNumber').textContent = reservation.reservationNumber;
+            document.getElementById('modalName').textContent = reservation.name;
+            document.getElementById('modalAmount').textContent = reservation.amount;
+            document.getElementById('modalCheckInDate').textContent = reservation.checkInDate;
+            document.getElementById('modalDueDate').textContent = reservation.dueDate;
+            document.getElementById('modalSource').textContent = reservation.source;
+
+            // Render payment history
+            const paymentHistoryDiv = document.getElementById('paymentHistory');
+            paymentHistoryDiv.innerHTML = '';
+            reservation.payments.forEach(payment => {
+                const paymentElement = document.createElement('div');
+                paymentElement.classList.add('border-b', 'py-2');
+                paymentElement.innerHTML = `
+                    <p><strong>Date:</strong> ${new Date(payment.date).toLocaleDateString()}</p>
+                    <p><strong>Amount:</strong> $${payment.amount}</p>
+                    <p><strong>Type:</strong> ${payment.type}</p>
+                    <p><strong>Payment Ref:</strong> ${payment.ref}</p>
+                    <p><strong>Factura Electronica:</strong> ${payment.facturaElectronica}</p>
+                `;
+                paymentHistoryDiv.appendChild(paymentElement);
+            });
+
+            document.getElementById('reservationModal').style.display = 'block';
+        }
+
+        // Close modal functionality
+        document.getElementById('closeModal').addEventListener('click', () => {
+            document.getElementById('reservationModal').style.display = 'none';
+        });
+
+        // Add Payment Functionality
+        document.getElementById('paymentForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const reservationNumber = document.getElementById('modalReservationNumber').textContent;
+            const reservation = reservations.find(res => res.reservationNumber === reservationNumber);
+
+            const paymentAmount = parseFloat(document.getElementById('paymentAmount').value);
+            const paymentType = document.getElementById('paymentType').value;
+            const paymentRef = document.getElementById('paymentRef').value;
+            const facturaElectronica = document.getElementById('facturaElectronica').value;
+
+            if (!reservation) return;
+
+            reservation.payments.push({
+                date: new Date(),
+                amount: paymentAmount,
+                type: paymentType,
+                ref: paymentRef,
+                facturaElectronica: facturaElectronica
+            });
+
+            reservation.remainingBalance -= paymentAmount;
+
+            localStorage.setItem('reservations', JSON.stringify(reservations));
+            filterReservations();
+            viewReservationDetails(reservationNumber);
+
+            // Clear form after submitting
+            document.getElementById('paymentForm').reset();
+        });
+
+        // Add Reservation Form Submission
+        document.getElementById('addReservationForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const reservationNumber = document.getElementById('reservationNumber').value;
+            const name = document.getElementById('name').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const checkInDate = document.getElementById('checkInDate').value;
+            const dueDate = document.getElementById('dueDate').value;
+            const source = document.getElementById('source').value;
+
+            const newReservation = {
+                reservationNumber,
+                name,
+                amount,
+                checkInDate,
+                dueDate,
+                source,
+                payments: [],
+                remainingBalance: amount
+            };
+
+            reservations.push(newReservation);
+            localStorage.setItem('reservations', JSON.stringify(reservations));
+
+            // Clean up the form after adding
+            document.getElementById('addReservationForm').reset();
+
+            // Re-render the filtered table
+            filterReservations();
+        });
+
+        // Function to filter reservations
+        function filterReservations() {
+            const searchTerm = document.getElementById('reservationSearch').value.toLowerCase();
+            const sourceFilter = document.getElementById('sourceFilter').value;
+            const paymentStatusFilter = document.getElementById('paymentStatusFilter').value;
+
+            const filteredReservations = reservations.filter(reservation => {
+                const matchesReservationSearch = reservation.reservationNumber.toLowerCase().includes(searchTerm);
+                const matchesSource = sourceFilter === '' || reservation.source === sourceFilter;
+                const matchesPaymentStatus = paymentStatusFilter === '' ||
+                    (paymentStatusFilter === 'pending' && reservation.remainingBalance > 0) ||
+                    (paymentStatusFilter === 'paid' && reservation.remainingBalance === 0);
+
+                return matchesReservationSearch && matchesSource && matchesPaymentStatus;
+            });
+
+            renderReservationTable(filteredReservations);
+        }
+
+        // Trigger filtering when any filter input changes
+        document.getElementById('reservationSearch').addEventListener('input', filterReservations);
+        document.getElementById('sourceFilter').addEventListener('change', filterReservations);
+        document.getElementById('paymentStatusFilter').addEventListener('change', filterReservations);
+
+        // Initial load of filtered reservations
+        filterReservations();
+    </script>
+
 </body>
 </html>
 
