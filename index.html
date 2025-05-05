@@ -103,6 +103,12 @@
     </div>
 </div>
 
+<div class="max-w-7xl mx-auto mb-4">
+    <button id="exportButton" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+        Export as XLSX
+    </button>
+</div>
+
 
     <!-- Filtered Reservations Table -->
     <table id="filteredReservationTable" class="min-w-full table-auto bg-white rounded-lg shadow-md mb-6 max-w-7xl mx-auto">
@@ -121,7 +127,24 @@
         <tbody id="filteredReservationTableBody">
             <!-- Filtered reservations will be rendered here -->
         </tbody>
+	  <tfoot>
+        <tr>
+            <td colspan="2" class="px-4 py-2 text-left font-semibold">Total:</td>
+            <td id="totalAmount" class="px-4 py-2 text-left">$0</td>
+            <td colspan="5"></td>
+        </tr>
+    </tfoot>
     </table>
+
+    <div id="totalAmount" class="text-right px-4 py-2 bg-gray-100">Total Amount: $0</div>
+
+    <!-- Pagination Controls -->
+<div id="paginationControls" class="flex justify-between px-4 py-2 bg-gray-100">
+    <button id="prevPage" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" disabled>Previous</button>
+    <div id="pageNumbers" class="flex space-x-2"></div>
+    <button id="nextPage" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" disabled>Next</button>
+</div>
+
 
     <!-- Reservation Details Modal -->
     <div id="reservationModal" class="hidden">
@@ -182,31 +205,155 @@
 
     <script>
         let reservations = JSON.parse(localStorage.getItem('reservations')) || [];
+	
+
+
+
+
+
+let currentPage = 1;
+    const reservationsPerPage = 5; // Number of reservations to show per page
+
+    // Function to calculate and update the total amount
+    function updateTotalAmount(filteredReservations) {
+        const totalAmount = filteredReservations.reduce((sum, reservation) => sum + reservation.amount, 0);
+        document.getElementById('totalAmount').textContent = `Total Amount: $${totalAmount.toFixed(2)}`;
+    }
+
+    // Function to render reservation table with pagination
+    function renderReservationTable(filteredReservations) {
+        const tableBody = document.getElementById('filteredReservationTableBody');
+        const paginationControls = document.getElementById('paginationControls');
+        const pageNumbers = document.getElementById('pageNumbers');
+	        const totalAmountElement = document.getElementById('totalAmount');
+
+
+        // Clear the table and pagination
+        tableBody.innerHTML = '';
+        pageNumbers.innerHTML = '';
+
+        // Calculate total pages
+        const totalPages = Math.ceil(filteredReservations.length / reservationsPerPage);
+
+        // Get the data for the current page
+        const start = (currentPage - 1) * reservationsPerPage;
+        const end = start + reservationsPerPage;
+        const currentPageData = filteredReservations.slice(start, end);
+
+        // Render the filtered reservations
+        currentPageData.forEach(reservation => {
+            const row = document.createElement('tr');
+            row.className = reservation.remainingBalance === 0 ? 'bg-green-100' : 'bg-red-100';
+
+            row.innerHTML = `
+                <td class="px-4 py-2">${reservation.reservationNumber}</td>
+                <td class="px-4 py-2">${reservation.name}</td>
+                <td class="px-4 py-2">$${reservation.amount}</td>
+                <td class="px-4 py-2">${reservation.checkInDate}</td>
+                <td class="px-4 py-2">${reservation.dueDate}</td>
+                <td class="px-4 py-2">$${reservation.remainingBalance}</td>
+                <td class="px-4 py-2">${reservation.source}</td>
+                <td class="px-4 py-2">
+                    <button class="text-blue-600 hover:text-blue-800" onclick="viewReservationDetails('${reservation.reservationNumber}')">View</button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+
+		totalAmount += reservation.amount;
+        });
+
+        // Render pagination buttons
+        for (let i = 1; i <= totalPages; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.className = 'px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-700';
+            pageButton.textContent = i;
+            pageButton.addEventListener('click', () => {
+                currentPage = i;
+                filterReservations();
+            });
+            pageNumbers.appendChild(pageButton);
+        }
+
+        // Enable/Disable next/prev buttons
+        document.getElementById('prevPage').disabled = currentPage === 1;
+        document.getElementById('nextPage').disabled = currentPage === totalPages;
+
+	        totalAmountElement.textContent = `$${parseFloat(totalAmount).toFixed(2)}`;
+
+    }
+
+    // Function to filter reservations
+    function filterReservations() {
+        const searchTerm = document.getElementById('reservationSearch').value.toLowerCase();
+        const sourceFilter = document.getElementById('sourceFilter').value;
+        const paymentStatusFilter = document.getElementById('paymentStatusFilter').value;
+
+        const filteredReservations = reservations.filter(reservation => {
+            const matchesReservationSearch = reservation.reservationNumber.toLowerCase().includes(searchTerm);
+            const matchesSource = sourceFilter === '' || reservation.source === sourceFilter;
+            const matchesPaymentStatus = paymentStatusFilter === '' ||
+                (paymentStatusFilter === 'pending' && reservation.remainingBalance > 0) ||
+                (paymentStatusFilter === 'paid' && reservation.remainingBalance === 0);
+
+            return matchesReservationSearch && matchesSource && matchesPaymentStatus;
+        });
+
+        // Render the filtered table and update total amount
+        renderReservationTable(filteredReservations);
+        updateTotalAmount(filteredReservations);
+    }
+
+    // Trigger filtering when any filter input changes
+    document.getElementById('reservationSearch').addEventListener('input', filterReservations);
+    document.getElementById('sourceFilter').addEventListener('change', filterReservations);
+    document.getElementById('paymentStatusFilter').addEventListener('change', filterReservations);
+
+    // Event listeners for pagination controls
+    document.getElementById('prevPage').addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            filterReservations();
+        }
+    });
+    document.getElementById('nextPage').addEventListener('click', () => {
+        currentPage++;
+        filterReservations();
+    });
+
+    // Initial load of filtered reservations
+    filterReservations();
+
+
+
+
+
+
+
 
         // Function to render the reservations table
-        function renderReservationTable(filteredReservations) {
-            const tableBody = document.getElementById('filteredReservationTableBody');
-            tableBody.innerHTML = '';
-
-            filteredReservations.forEach(reservation => {
-                const row = document.createElement('tr');
-                row.className = reservation.remainingBalance === 0 ? 'bg-green-100' : 'bg-red-100';
-
-                row.innerHTML = `
-                    <td class="px-4 py-2">${reservation.reservationNumber}</td>
-                    <td class="px-4 py-2">${reservation.name}</td>
-                    <td class="px-4 py-2">$${reservation.amount}</td>
-                    <td class="px-4 py-2">${reservation.checkInDate}</td>
-                    <td class="px-4 py-2">${reservation.dueDate}</td>
-                    <td class="px-4 py-2">$${reservation.remainingBalance}</td>
-                    <td class="px-4 py-2">${reservation.source}</td>
-                    <td class="px-4 py-2">
-                        <button class="text-blue-600 hover:text-blue-800" onclick="viewReservationDetails('${reservation.reservationNumber}')">View</button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
+        //function renderReservationTable(filteredReservations) {
+        //    const tableBody = document.getElementById('filteredReservationTableBody');
+        //    tableBody.innerHTML = '';
+        //
+        //    filteredReservations.forEach(reservation => {
+        //        const row = document.createElement('tr');
+        //        row.className = reservation.remainingBalance === 0 ? 'bg-green-100' : 'bg-red-100';
+        //
+        //        row.innerHTML = `
+        //            <td class="px-4 py-2">${reservation.reservationNumber}</td>
+        //            <td class="px-4 py-2">${reservation.name}</td>
+        //            <td class="px-4 py-2">$${reservation.amount}</td>
+        //            <td class="px-4 py-2">${reservation.checkInDate}</td>
+        //            <td class="px-4 py-2">${reservation.dueDate}</td>
+        //            <td class="px-4 py-2">$${reservation.remainingBalance}</td>
+        //            <td class="px-4 py-2">${reservation.source}</td>
+        //            <td class="px-4 py-2">
+        //                <button class="text-blue-600 hover:text-blue-800" onclick="viewReservationDetails('${reservation.reservationNumber}')">View</button>
+        //            </td>
+        //        `;
+        //        tableBody.appendChild(row);
+        //    });
+        //}
 
         // Function to view reservation details in a modal
         function viewReservationDetails(reservationNumber) {
@@ -287,6 +434,13 @@
             const dueDate = document.getElementById('dueDate').value;
             const source = document.getElementById('source').value;
 
+		 // 🔽 🔽 🔽 INSERT THIS RIGHT HERE:
+    if (reservations.some(r => r.reservationNumber === reservationNumber)) {
+        alert('Reservation number already exists.');
+        return;
+    }
+
+
             const newReservation = {
                 reservationNumber,
                 name,
@@ -309,23 +463,23 @@
         });
 
         // Function to filter reservations
-        function filterReservations() {
-            const searchTerm = document.getElementById('reservationSearch').value.toLowerCase();
-            const sourceFilter = document.getElementById('sourceFilter').value;
-            const paymentStatusFilter = document.getElementById('paymentStatusFilter').value;
-
-            const filteredReservations = reservations.filter(reservation => {
-                const matchesReservationSearch = reservation.reservationNumber.toLowerCase().includes(searchTerm);
-                const matchesSource = sourceFilter === '' || reservation.source === sourceFilter;
-                const matchesPaymentStatus = paymentStatusFilter === '' ||
-                    (paymentStatusFilter === 'pending' && reservation.remainingBalance > 0) ||
-                    (paymentStatusFilter === 'paid' && reservation.remainingBalance === 0);
-
-                return matchesReservationSearch && matchesSource && matchesPaymentStatus;
-            });
-
-            renderReservationTable(filteredReservations);
-        }
+        //function filterReservations() {
+        //    const searchTerm = document.getElementById('reservationSearch').value.toLowerCase();
+        //    const sourceFilter = document.getElementById('sourceFilter').value;
+        //    const paymentStatusFilter = document.getElementById('paymentStatusFilter').value;
+        //
+        //    const filteredReservations = reservations.filter(reservation => {
+        //        const matchesReservationSearch = reservation.reservationNumber.toLowerCase().includes(searchTerm);
+        //        const matchesSource = sourceFilter === '' || reservation.source === sourceFilter;
+        //        const matchesPaymentStatus = paymentStatusFilter === '' ||
+        //            (paymentStatusFilter === 'pending' && reservation.remainingBalance > 0) ||
+        //            (paymentStatusFilter === 'paid' && reservation.remainingBalance === 0);
+        //
+        //        return matchesReservationSearch && matchesSource && matchesPaymentStatus;
+        //    });
+        //
+        //    renderReservationTable(filteredReservations);
+        //}
 
         // Trigger filtering when any filter input changes
         document.getElementById('reservationSearch').addEventListener('input', filterReservations);
@@ -333,7 +487,70 @@
         document.getElementById('paymentStatusFilter').addEventListener('change', filterReservations);
 
         // Initial load of filtered reservations
-        filterReservations();
+       // filterReservations();
+
+
+
+
+
+
+
+
+document.getElementById("exportButton").addEventListener('click', function() {
+    const table = document.getElementById("filteredReservationTable");
+
+    let csvContent = "Reservation #, Guest Name, Amount, Check-in Date, Due Date, Remaining Balance, Source\n";
+
+	    let totalAmount = 0;
+
+
+    // Iterate over the table rows (excluding header row)
+    const rows = table.querySelectorAll("tbody tr");
+    rows.forEach(row => {
+        const cells = row.querySelectorAll("td");
+        const rowData = Array.from(cells).map(cell => cell.textContent.trim());
+
+
+        // Add the amount to the total
+        const amount = parseFloat(rowData[2].replace('$', '').trim()); // Assuming Amount is the 3rd column
+        if (!isNaN(amount)) {
+            totalAmount += amount;
+        }
+
+        csvContent += rowData.join(",") + "\n";
+    });
+
+//	    csvContent += `Total,,,,,$${totalAmount.toFixed(2)}\n`;
+	    //csvContent += `,,,,,,$${totalAmount.toFixed(2)}\n`;
+	    // Add the total row at the bottom, properly positioning it in the 3rd column (C4)
+    let totalRow = Array(6).fill(''); // Create 6 empty columns before the total
+    totalRow[2] = `$${totalAmount.toFixed(2)}`; // Place the total in the 3rd column (C)
+    csvContent += totalRow.join(",") + "\n";
+
+
+
+    // Create a Blob with the CSV content
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+    // Create a temporary link element
+    const link = document.createElement("a");
+
+    // Set download attribute to trigger file download
+    link.href = URL.createObjectURL(blob);
+    link.download = "Reservations.csv";  // File name for download
+
+    // Programmatically click the link to trigger download
+    link.click();
+});
+
+
+
+
+
+
+
+
+
     </script>
 
 </body>
